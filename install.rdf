@@ -8,6 +8,7 @@
 	<em:name>HTML5 Video Tuner</em:name>
 	<em:description>Selectively disable HTML5 Video and/or Media Source Extensions</em:description>
 	<em:creator>Off JustOff &lt;Off.Just.Off@gmail.com&gt;</em:creator>
+	<em:homepageURL>https://github.com/JustOff/html5-video-tuner/</em:homepageURL>
 	<em:updateURL>https://raw.githubusercontent.com/JustOff/html5-video-tuner/gh-pages/update.rdf</em:updateURL>
 	<em:targetApplication>
 	  <Description>
