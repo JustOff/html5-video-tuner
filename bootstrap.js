@@ -73,6 +73,9 @@ function startup(data, reason) {
 					&& aSubject.defaultView && aSubject.contentType == "text/html"
 					&& (aSubject.location.protocol == "http:" || aSubject.location.protocol == "https:")) {
 				let blacklisted = Blacklist.isBlacklisted(Utils.getBaseDomain(aSubject.defaultView.top.location.hostname));
+				if (!blacklisted && aSubject.defaultView != aSubject.defaultView.top) {
+					blacklisted = Blacklist.isBlacklisted(Utils.getBaseDomain(aSubject.defaultView.location.hostname));
+				}
 				if (blacklisted) {
 					aSubject.defaultView.wrappedJSObject.MediaSource = null;
 					if (blacklisted == 2) {
