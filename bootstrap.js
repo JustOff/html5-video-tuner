@@ -77,7 +77,7 @@ function startup(data, reason) {
 					blacklisted = Blacklist.isBlacklisted(Utils.getBaseDomain(aSubject.defaultView.location.hostname));
 				}
 				if (blacklisted) {
-					aSubject.defaultView.wrappedJSObject.MediaSource = null;
+					delete aSubject.defaultView.wrappedJSObject["MediaSource"];
 					if (blacklisted == 2) {
 						aSubject.defaultView.wrappedJSObject.document.createElement("video").constructor.prototype.canPlayType = function(mediaType) { return ""; };
 					}
