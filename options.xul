@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
+<!DOCTYPE window SYSTEM "chrome://h5vtuner/locale/h5vtuner.dtd">
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	<setting type="bool" pref="extensions.h5vtuner.nohtml5" title="Disable HTML5 Video by default">
+	<setting type="bool" pref="extensions.h5vtuner.nohtml5" title="&h5vtuner.NoHTML5;">
 	</setting>
 </vbox>
