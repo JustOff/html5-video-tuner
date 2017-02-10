@@ -59,10 +59,18 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 			if (domain) {
 				let baseDomain = Utils.getBaseDomain(domain);
 
-				if (Blacklist.isBlacklisted(baseDomain)) {
-					Blacklist.removeFromBlacklist(baseDomain);
+				if (Prefs.getValue("nohtml5")) {
+					if (Blacklist.isBlacklisted(baseDomain) != 2) {
+						Blacklist.addToBlacklist(baseDomain, 2);
 
-					Buttons.refresh();
+						Buttons.refresh();
+					}
+				} else {
+					if (Blacklist.isBlacklisted(baseDomain)) {
+						Blacklist.removeFromBlacklist(baseDomain);
+
+						Buttons.refresh();
+					}
 				}
 			}
 		}, false);
@@ -97,10 +105,18 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 			if (domain) {
 				let baseDomain = Utils.getBaseDomain(domain);
 
-				if (Blacklist.isBlacklisted(baseDomain) != 2) {
-					Blacklist.addToBlacklist(baseDomain, 2);
+				if (Prefs.getValue("nohtml5")) {
+					if (Blacklist.isBlacklisted(baseDomain)) {
+						Blacklist.removeFromBlacklist(baseDomain);
 
-					Buttons.refresh();
+						Buttons.refresh();
+					}
+				} else {
+					if (Blacklist.isBlacklisted(baseDomain) != 2) {
+						Blacklist.addToBlacklist(baseDomain, 2);
+
+						Buttons.refresh();
+					}
 				}
 			}
 		}, false);
@@ -118,12 +134,15 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 			let domain = Utils.getHostFromTab(window.gBrowser.selectedTab, window);
 			if (domain) {
 				let baseDomain = Utils.getBaseDomain(domain);
+				let nohtml5 = Prefs.getValue("nohtml5");
 
 				if (Blacklist.isBlacklisted(baseDomain) == 1) {
 					menuitemNomse.setAttribute("checked", "true");
-				} else if (Blacklist.isBlacklisted(baseDomain) == 2) {
+				} else if (!nohtml5 && Blacklist.isBlacklisted(baseDomain) == 2
+						|| nohtml5 && !Blacklist.isBlacklisted(baseDomain)) {
 					menuitemNohtml5.setAttribute("checked", "true");
-				} else {
+				} else if (!nohtml5 && !Blacklist.isBlacklisted(baseDomain)
+						|| nohtml5 && Blacklist.isBlacklisted(baseDomain) == 2) {
 					menuitemNormal.setAttribute("checked", "true");
 				}
 				menuitemNormal.removeAttribute("disabled");
@@ -228,6 +247,7 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 
 		if (button) {
 			let domain = Utils.UTF8toACE(Utils.getHostFromTab(window.gBrowser.selectedTab, window));
+			let nohtml5 = Prefs.getValue("nohtml5");
 
 			if (!domain) {
 				button.style.listStyleImage = "url(" + this.skinURL + this.iconFileNames.unknown + ")";
@@ -235,10 +255,12 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 			} else if (Blacklist.isBlacklisted(domain) == 1) {
 				button.style.listStyleImage = "url(" + this.skinURL + this.iconFileNames.nomse + ")";
 				button.setAttribute("tooltiptext", Utils.translate("Tooltip") + " " + Utils.translate("MLnomse"));
-			} else if (Blacklist.isBlacklisted(domain) == 2) {
+			} else if (!nohtml5 && Blacklist.isBlacklisted(domain) == 2 ||
+					nohtml5 && !Blacklist.isBlacklisted(domain)) {
 				button.style.listStyleImage = "url(" + this.skinURL + this.iconFileNames.nohtml5 + ")";
 				button.setAttribute("tooltiptext", Utils.translate("Tooltip") + " " + Utils.translate("MLnohtml5"));
-			} else {
+			} else if (!nohtml5 && !Blacklist.isBlacklisted(domain)||
+					nohtml5 && Blacklist.isBlacklisted(domain) == 2) {
 				button.style.listStyleImage = "url(" + this.skinURL + this.iconFileNames.normal + ")";
 				button.setAttribute("tooltiptext", Utils.translate("Tooltip") + " " + Utils.translate("MLnormal"));
 			}

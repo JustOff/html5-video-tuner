@@ -6,7 +6,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 const extName = "h5vtuner";
 const extJSPath = "chrome://" + extName + "/content/";
 
-let Prefs, Buttons, gWindowListener, deiObserver;
+let Prefs, Buttons, gWindowListener, deiObserver, prefObserver, nohtml5;
 
 let onBrowserProgress = {
 	onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
@@ -64,6 +64,26 @@ function startup(data, reason) {
 
 	Prefs.init();
 	Blacklist.init();
+	nohtml5 = Services.prefs.getBoolPref("extensions." + extName + ".nohtml5");
+
+	prefObserver = {
+		observe: function (aSubject, aTopic, aData) {
+			if (aTopic == "nsPref:changed" && aData == "nohtml5") {
+				nohtml5 = Services.prefs.getBoolPref("extensions." + extName + ".nohtml5");
+				Prefs.setValue("nohtml5", nohtml5);
+			}
+		},
+
+		register: function () {
+			this.prefsBranch = Services.prefs.getBranch("extensions." + extName + ".");
+			this.prefsBranch.addObserver("", this, false);
+		},
+
+		unregister: function () {
+			this.prefsBranch.removeObserver("", this);
+		}
+	};
+	prefObserver.register();
 
 	deiObserver = {
 		QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver, Ci.nsISupportsWeakReference]),
@@ -73,13 +93,22 @@ function startup(data, reason) {
 					&& aSubject.defaultView && aSubject.contentType == "text/html"
 					&& (aSubject.location.protocol == "http:" || aSubject.location.protocol == "https:")) {
 				let blacklisted = Blacklist.isBlacklisted(Utils.getBaseDomain(aSubject.defaultView.top.location.hostname));
-				if (!blacklisted && aSubject.defaultView != aSubject.defaultView.top) {
+				if (!nohtml5 && !blacklisted && aSubject.defaultView != aSubject.defaultView.top) {
 					blacklisted = Blacklist.isBlacklisted(Utils.getBaseDomain(aSubject.defaultView.location.hostname));
 				}
-				if (blacklisted) {
-					delete aSubject.defaultView.wrappedJSObject["MediaSource"];
-					if (blacklisted == 2) {
+				if (nohtml5) {
+					if (blacklisted == 1) {
+						delete aSubject.defaultView.wrappedJSObject["MediaSource"];
+					} else if (!blacklisted) {
+						delete aSubject.defaultView.wrappedJSObject["MediaSource"];
 						aSubject.defaultView.wrappedJSObject.document.createElement("video").constructor.prototype.canPlayType = function(mediaType) { return ""; };
+					}
+				} else {
+					if (blacklisted) {
+						delete aSubject.defaultView.wrappedJSObject["MediaSource"];
+						if (blacklisted == 2) {
+							aSubject.defaultView.wrappedJSObject.document.createElement("video").constructor.prototype.canPlayType = function(mediaType) { return ""; };
+						}
 					}
 				}
 			}
@@ -111,6 +140,7 @@ function shutdown(data, reason) {
 	}
 
 	Services.obs.removeObserver(deiObserver, "document-element-inserted", false);
+	prefObserver.unregister();
 
 	Cu.unload(extJSPath + "buttons.js");
 	Cu.unload(extJSPath + "blacklist.js");

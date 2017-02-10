@@ -8,7 +8,8 @@ let Prefs = function(extName, Utils) {
 	this.defaultPrefs = {
 		blacklistedDomains: "{}",
 		toolbarButtonPlaceId: "addon-bar",
-		toolbarButtonNextItemId: ""
+		toolbarButtonNextItemId: "",
+		nohtml5: false
 	};
 
 	this.currentPrefs = {};
