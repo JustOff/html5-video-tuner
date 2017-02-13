@@ -193,7 +193,9 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 				}
 				toolbar.insertItem(this.buttonId, nextItem);
 			}
-			window.setToolbarVisibility(toolbar, true);
+			if (toolbar.getAttribute("collapsed") == "true") {
+				window.setToolbarVisibility(toolbar, true);
+			}
 		}
 
 		this.afterCustomization = this.afterCustomization.bind(this);
