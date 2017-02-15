@@ -6,7 +6,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 const extName = "h5vtuner";
 const extJSPath = "chrome://" + extName + "/content/";
 
-let Prefs, Buttons, gWindowListener, deiObserver, prefObserver, nohtml5;
+let Prefs, Buttons, gWindowListener, deiObserver, prefObserver, audioEl, nohtml5;
 
 let onBrowserProgress = {
 	onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
@@ -64,13 +64,21 @@ function startup(data, reason) {
 
 	Prefs.init();
 	Blacklist.init();
+	audioEl = Services.prefs.getBoolPref("extensions." + extName + ".audioEl");
 	nohtml5 = Services.prefs.getBoolPref("extensions." + extName + ".nohtml5");
 
 	prefObserver = {
 		observe: function (aSubject, aTopic, aData) {
-			if (aTopic == "nsPref:changed" && aData == "nohtml5") {
-				nohtml5 = Services.prefs.getBoolPref("extensions." + extName + ".nohtml5");
-				Prefs.setValue("nohtml5", nohtml5);
+			if (aTopic != "nsPref:changed") return;
+			switch (aData) {
+				case "audioEl":
+					audioEl = Services.prefs.getBoolPref("extensions." + extName + ".audioEl");
+					Prefs.setValue("audioEl", audioEl);
+					break;
+				case "nohtml5":
+					nohtml5 = Services.prefs.getBoolPref("extensions." + extName + ".nohtml5");
+					Prefs.setValue("nohtml5", nohtml5);
+					break;
 			}
 		},
 
@@ -102,12 +110,18 @@ function startup(data, reason) {
 					} else if (!blacklisted) {
 						delete aSubject.defaultView.wrappedJSObject["MediaSource"];
 						aSubject.defaultView.wrappedJSObject.document.createElement("video").constructor.prototype.canPlayType = function(mediaType) { return ""; };
+						if (audioEl) {
+							aSubject.defaultView.wrappedJSObject.document.createElement("audio").constructor.prototype.canPlayType = function(mediaType) { return ""; };
+						}
 					}
 				} else {
 					if (blacklisted) {
 						delete aSubject.defaultView.wrappedJSObject["MediaSource"];
 						if (blacklisted == 2) {
 							aSubject.defaultView.wrappedJSObject.document.createElement("video").constructor.prototype.canPlayType = function(mediaType) { return ""; };
+							if (audioEl) {
+								aSubject.defaultView.wrappedJSObject.document.createElement("audio").constructor.prototype.canPlayType = function(mediaType) { return ""; };
+							}
 						}
 					}
 				}

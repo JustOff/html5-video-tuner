@@ -9,6 +9,7 @@ let Prefs = function(extName, Utils) {
 		blacklistedDomains: "{}",
 		toolbarButtonPlaceId: "addon-bar",
 		toolbarButtonNextItemId: "",
+		audioEl: true,
 		nohtml5: false
 	};
 
