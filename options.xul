@@ -3,4 +3,5 @@
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<setting type="bool" pref="extensions.h5vtuner.audioEl" title="&h5vtuner.audioEl;" />
 	<setting type="bool" pref="extensions.h5vtuner.nohtml5" title="&h5vtuner.NoHTML5;" />
+	<setting type="bool" pref="extensions.h5vtuner.no60fps" title="&h5vtuner.No60fps;" />
 </vbox>

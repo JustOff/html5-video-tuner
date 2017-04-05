@@ -1,2 +1,3 @@
 <!ENTITY h5vtuner.audioEl "Control HTML5 Audio along with Video">
 <!ENTITY h5vtuner.NoHTML5 "Disable HTML5 Media by default">
+<!ENTITY h5vtuner.No60fps "Disable 60fps Video support">

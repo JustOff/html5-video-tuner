@@ -10,7 +10,8 @@ let Prefs = function(extName, Utils) {
 		toolbarButtonPlaceId: "addon-bar",
 		toolbarButtonNextItemId: "",
 		audioEl: true,
-		nohtml5: false
+		nohtml5: false,
+		no60fps: false
 	};
 
 	this.currentPrefs = {};

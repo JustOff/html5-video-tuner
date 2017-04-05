@@ -6,7 +6,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 const extName = "h5vtuner";
 const extJSPath = "chrome://" + extName + "/content/";
 
-let Prefs, Buttons, gWindowListener, deiObserver, prefObserver, audioEl, nohtml5;
+let Prefs, Buttons, gWindowListener, deiObserver, prefObserver, audioEl, nohtml5, no60fps;
 
 let onBrowserProgress = {
 	onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
@@ -50,6 +50,17 @@ function browserWindowShutdown(aWindow) {
 	Buttons.clear(aWindow);
 }
 
+function makeModifiedMimeTypeChecker(origFunc) {
+	return function (type) {
+		if (type === undefined) return '';
+
+		let match = /framerate=(\d+)/.exec(type);
+		if (match && match[1] > 30) return '';
+
+		return origFunc(type);
+	};
+}
+
 function startup(data, reason) {
 	let Imports = {};
 	Cu.import(extJSPath + "utils.js", Imports);
@@ -66,6 +77,7 @@ function startup(data, reason) {
 	Blacklist.init();
 	audioEl = Services.prefs.getBoolPref("extensions." + extName + ".audioEl");
 	nohtml5 = Services.prefs.getBoolPref("extensions." + extName + ".nohtml5");
+	no60fps = Services.prefs.getBoolPref("extensions." + extName + ".no60fps");
 
 	prefObserver = {
 		observe: function (aSubject, aTopic, aData) {
@@ -78,6 +90,10 @@ function startup(data, reason) {
 				case "nohtml5":
 					nohtml5 = Services.prefs.getBoolPref("extensions." + extName + ".nohtml5");
 					Prefs.setValue("nohtml5", nohtml5);
+					break;
+				case "no60fps":
+					no60fps = Services.prefs.getBoolPref("extensions." + extName + ".no60fps");
+					Prefs.setValue("no60fps", no60fps);
 					break;
 			}
 		},
@@ -113,6 +129,12 @@ function startup(data, reason) {
 						if (audioEl) {
 							aSubject.defaultView.wrappedJSObject.document.createElement("audio").constructor.prototype.canPlayType = function(mediaType) { return ""; };
 						}
+					} else if (no60fps) {
+						let mse = aSubject.defaultView.wrappedJSObject["MediaSource"];
+						if (typeof mse === "function") {
+							let origIsTypeSupported = mse.isTypeSupported.bind(mse);
+							mse.isTypeSupported = makeModifiedMimeTypeChecker(origIsTypeSupported);
+						}
 					}
 				} else {
 					if (blacklisted) {
@@ -122,6 +144,12 @@ function startup(data, reason) {
 							if (audioEl) {
 								aSubject.defaultView.wrappedJSObject.document.createElement("audio").constructor.prototype.canPlayType = function(mediaType) { return ""; };
 							}
+						}
+					} else if (no60fps) {
+						let mse = aSubject.defaultView.wrappedJSObject["MediaSource"];
+						if (typeof mse === "function") {
+							let origIsTypeSupported = mse.isTypeSupported.bind(mse);
+							mse.isTypeSupported = makeModifiedMimeTypeChecker(origIsTypeSupported);
 						}
 					}
 				}
