@@ -1,3 +1,4 @@
 <!ENTITY h5vtuner.audioEl "Управлять HTML5 аудио вместе с видео">
 <!ENTITY h5vtuner.NoHTML5 "Отключить HTML5 медиа по умолчанию">
+<!ENTITY h5vtuner.WebM "Разрешить поддержку WebM видео">
 <!ENTITY h5vtuner.No60fps "Отключить поддержку 60fps видео">
