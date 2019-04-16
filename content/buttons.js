@@ -173,10 +173,18 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 
 		let toolbarId = Prefs.getValue("toolbarButtonPlaceId"),
 			nextItemId = Prefs.getValue("toolbarButtonNextItemId"),
-			toolbar = toolbarId && $(document, toolbarId),
-			nextItem = toolbar && nextItemId != "" && $(document, nextItemId);
-		
+			toolbar = toolbarId && $(document, toolbarId);
+
 		if (toolbar) {
+			// Handle special items with dynamic ids
+			let match = /^(separator|spacer|spring)\[(\d+)\]$/.exec(nextItemId);
+			if (match !== null) {
+				let dynItems = toolbar.querySelectorAll("toolbar" + match[1]);
+				if (match[2] < dynItems.length) {
+					nextItemId = dynItems[match[2]].id;
+				}
+			}
+			let nextItem = nextItemId && $(document, nextItemId);
 			if (nextItem && nextItem.parentNode && nextItem.parentNode.id == toolbarId) {
 				toolbar.insertItem(this.buttonId, nextItem);
 			} else {
@@ -207,10 +215,10 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 	this.afterCustomization = function(event) {
 		let toolbox = event.target,
 			b = $(toolbox.parentNode, this.buttonId),
-			toolbarId, nextItemId;
+			toolbarId, nextItem, nextItemId;
 		if (b) {
-			let parent = b.parentNode,
-				nextItem = b.nextSibling;
+			let parent = b.parentNode;
+			nextItem = b.nextSibling;
 			if (parent && parent.localName == "toolbar") {
 				toolbarId = parent.id;
 				nextItemId = nextItem && nextItem.id;
@@ -220,6 +228,17 @@ let Buttons = function(extName, Prefs, Blacklist, Utils) {
 				let mnp = b.firstChild;
 				for (let i = mnp.childNodes.length - 2; i >= 0; i--) {
 					mnp.appendChild(mnp.childNodes[i]);
+				}
+			}
+		}
+		// Handle special items with dynamic ids
+		let match = /^(separator|spacer|spring)\d+$/.exec(nextItemId);
+		if (match !== null) {
+			let dynItems = nextItem.parentNode.querySelectorAll("toolbar" + match[1]);
+			for (let i = 0; i < dynItems.length; i++) {
+				if (dynItems[i].id == nextItemId) {
+					nextItemId = match[1] + "[" + i + "]";
+					break;
 				}
 			}
 		}
